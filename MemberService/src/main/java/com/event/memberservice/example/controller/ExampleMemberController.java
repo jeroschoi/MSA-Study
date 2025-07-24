@@ -20,7 +20,7 @@ public class ExampleMemberController {
     @Operation(summary = "Example API", description = "Example API  to Select Sample Data")
     public ResponseEntity<SampleMemberDto> sampleMemberSelect(Long id) {
         log.info("sampleSelect API Start");
-        return ResponseEntity.ok(exampleService.sampleSelect(id));
+        return ResponseEntity.ok(exampleService.sampleMemberSelect(id));
     }
 
     @Operation(summary = "Example API", description = "Example API to update Sample example")
@@ -28,7 +28,7 @@ public class ExampleMemberController {
     public ResponseEntity<String> sampleMemberUpdate(@RequestBody SampleMemberDto sampleDto){
         log.info("sampleUpdate API Start");
         return ResponseEntity.ok(
-                exampleService.sampleUpdate(
+                exampleService.sampleMemberUpdate(
                         SampleMemberDto.builder()
                                  .id(sampleDto.getId())
                                  .content(sampleDto.getContent())
@@ -37,21 +37,21 @@ public class ExampleMemberController {
     }
 
     @Operation(summary = "Example API", description = "Example API to Insert Sample example")
-    @PostMapping("/sample")
+    @PostMapping("/register")
     public ResponseEntity<String> sampleMemberInsert(@RequestParam String content){
         log.info("sampleInsert API Start");
         return ResponseEntity.ok(
-                exampleService.sampleInsert(
+                exampleService.sampleMemberInsert(
                         SampleMemberDto.builder()
                                 .content(content)
                                 .build()
                 ));
     }
 
-    @PostMapping("/sample")
+    @PostMapping("/remove")
     @Operation(summary = "Example API", description = "Example API to Delete Sample Data")
     public ResponseEntity<String> sampleMemberDelete(Long id) {
         log.info("sampleMemberDelete API Start");
-        return ResponseEntity.ok(exampleService.sampleDelete(id));
+        return ResponseEntity.ok(exampleService.sampleMemberDelete(id));
     }
 }
