@@ -34,9 +34,13 @@ public class ExampleMessageService {
     }
 
     @Transactional
-    public String exampleMessageDelete(Long id) {
-        exampleMessageRepository.deleteById(id);
+    public ExampleMessageResponseDto exampleMessageDelete(Long memberId) {
+        exampleMessageRepository.deleteById(memberId);
         // TODO Return 어떻게 설계 하는게 좋을까?
-        return "delete success";
+        return ExampleMessageResponseDto.builder()
+                .memberId(memberId)
+                .returnMessage("delete success")
+                .returnCode("S200")
+                .build();
     }
 }
