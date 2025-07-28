@@ -7,7 +7,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @ToString
 @Getter
-@Table(name = "sample_member")
+@Table(name = "sample_message")
 @Entity
 @Builder
 @RequiredArgsConstructor

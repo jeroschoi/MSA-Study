@@ -40,8 +40,8 @@ public class ExampleMessageController {
 
     @PostMapping("/remove")
     @Operation(summary = "Example API", description = "Example API to Delete Sample Data")
-    public ResponseEntity<String> sampleMemberDelete(Long id) {
-        log.info("sampleMemberDelete API Start");
-        return ResponseEntity.ok("test");
+    public ResponseEntity<ExampleMessageResponseDto> sampleMemberDelete(@RequestBody  ExampleMessageRequestDto id) {
+        log.info("sampleMemberDelete API Start : {} " , id.toString());
+        return ResponseEntity.ok(ExampleMessageResponseDto.builder().returnMessage("success").build());
     }
 }
