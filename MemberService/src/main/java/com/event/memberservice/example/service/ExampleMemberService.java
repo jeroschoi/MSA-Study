@@ -44,7 +44,7 @@ public class ExampleMemberService {
     public String sampleMemberDelete(Long id) {
         sampleRepository.deleteById(id);
         SampleMessageResponseDto responseMono = WebClient.builder()
-            .baseUrl("http://localhost:8080/msa/v1/sample")
+            .baseUrl("http://localhost:8082/msa/message/v1/remove")
             .defaultHeader("Content-Type", "application/json")
             .build().post()
             .bodyValue(
@@ -55,7 +55,7 @@ public class ExampleMemberService {
             .doOnSuccess(sampleMessageResponseDto -> log.info("Response: {}", sampleMessageResponseDto.toString()))
             .doOnError(WebClientResponseException.class , ex -> log.error("Error Code check : {} , {}", ex.getMessage() , ex.getStatusCode()))
             //.doOnError(throwable -> log.error("Error occurred: {}", throwable.getMessage()))
-            .block();
+            .block(); // 동기 처리 코드 크흠...
 
         log.info(String.valueOf(responseMono));
 
