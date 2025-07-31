@@ -31,24 +31,13 @@ import java.util.Map;
 public class MessageController {
 
     private final MessageService messageService;
-
     private final MessageSendService messageSendService;
 
     @PostMapping("/send/single")
     @Operation(summary = "Send Single Message", description = "단건 메시지 전송")
     public ResponseEntity<GlobalReponseDto> sendSingleMessage(@RequestBody @Valid MessageRequestDto requestDto ) {
-        GlobalReponseDto responseDto = new GlobalReponseDto();
-        boolean isSent = messageSendService.sendMessage(requestDto);
-        if (isSent) {
-            log.info("Message sent successfully: {}", requestDto);
-            return ResponseEntity.ok().build();
-        } else {
-            log.warn("Message sending failed: {}", requestDto);
-            Map<String, Object> result = new HashMap<>();
-            result.put("status", "failed");
-            responseDto.setData(result);
-            return ResponseEntity.status(500).body(responseDto);
-        }
+        messageSendService.sendMessage(requestDto);
+        return ResponseEntity.ok().build();
     }
 
 
@@ -60,18 +49,11 @@ public class MessageController {
         List<MessageRequestDto> failedList = new ArrayList<>();
 
         for (MessageRequestDto dto : requestDtoList) {
-            log.info("Sending message: {}", dto);
             try {
-                boolean isSent = messageSendService.sendMessage(dto);
-                if (isSent) {
-                    log.info("Message sent successfully: {}", dto);
-                    sentCount++;
-                } else {
-                    log.warn("Message failed to send: {}", dto);
-                    failedList.add(dto);
-                }
+                messageSendService.sendMessage(dto);
+                sentCount++;
             } catch (Exception e) {
-                log.error("Exception while sending message: {}", dto, e);
+                log.error("메세지 전송 실패 - {}", dto, e);
                 failedList.add(dto);
             }
         }
@@ -116,7 +98,7 @@ public class MessageController {
     @PutMapping("/{memberId}")
     @Operation(summary = "Update Message History", description = "회원 ID 로 메시지 이력 비활성화")
     public ResponseEntity<GlobalReponseDto> updateMessageHistory(@PathVariable String memberId) {
-        int updateSize = messageService.visableFalseMessageHistory(memberId);
+        int updateSize = messageService.visibleFalseMessageHistory(memberId);
         GlobalReponseDto responseDto = new GlobalReponseDto();
         responseDto.setData(new HashMap<String, Integer>() {{;
             put("updateSize", updateSize);

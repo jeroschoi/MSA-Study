@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KakaoMessage implements MessageSender {
     @Override
-    public boolean suport(MessageType type) {
+    public boolean support(MessageType type) {
         return type == MessageType.KAKAO;
     }
 

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class SmsMessage implements MessageSender {
 
     @Override
-    public boolean suport(MessageType type) {
+    public boolean support(MessageType type) {
         return type == MessageType.SMS;
     }
 

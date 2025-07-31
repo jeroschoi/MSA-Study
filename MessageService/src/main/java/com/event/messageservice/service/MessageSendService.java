@@ -18,19 +18,15 @@ public class MessageSendService {
      * 메시지 저장 및 전송
      */
     @Transactional
-    public Boolean sendMessage(MessageRequestDto dto) {
+    public void sendMessage(MessageRequestDto dto) {
         log.info("메시지 전송 요청 - {}", dto);
-        try {
-            MessageSender messageSender = adapter.getMessageSender(dto);
-            log.info("adapter.getMessageSender(dto) - {}", messageSender);
-            messageSendService.saveMessageHistory(dto);
-            messageSender.sendMessage(dto);
-        } catch (IllegalArgumentException e) {
-            log.error("메시지 전송 실패: {}", e.getMessage());
-            return false;
-        }
+        MessageSender messageSender = adapter.getMessageSender(dto);
+
+        log.info("adapter.getMessageSender(dto) - {}", messageSender);
+        messageSendService.saveMessageHistory(dto);
+        messageSender.sendMessage(dto);
+
         log.info("메시지 전송 성공 - {}", dto);
-        return true;
     }
 
 }

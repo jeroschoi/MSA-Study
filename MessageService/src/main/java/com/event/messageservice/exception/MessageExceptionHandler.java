@@ -16,18 +16,30 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class MessageExceptionHandler {
+    @ExceptionHandler(MessageException.class)
+    public ResponseEntity<GlobalErrorReponseDto> handleMessageException(MessageException e) {
+        GlobalErrorReponseDto responseDto = new GlobalErrorReponseDto();
+        responseDto.setMessage(e.getMessage());
+        responseDto.setErrorCode(e.getErrorCode().getCode());
+        return ResponseEntity.status(e.getErrorCode().getStatus()).body(responseDto);
+    }
 
-    @ExceptionHandler({
-            MethodArgumentNotValidException.class,
-            IllegalArgumentException.class
-    })
-    public ResponseEntity<Map<String, String>> handleValidationError(MethodArgumentNotValidException ex) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
         }
         return ResponseEntity.badRequest().body(errors);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+        return ResponseEntity.badRequest().body(errors);
+    }
+
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<GlobalErrorReponseDto> handleEntityNotFoundException(EntityNotFoundException e) {

@@ -3,9 +3,10 @@ package com.event.messageservice.service;
 import com.event.messageservice.dto.MessageRequestDto;
 import com.event.messageservice.entity.MessageHistory;
 
+import com.event.messageservice.exception.MessageErrorCode;
+import com.event.messageservice.exception.MessageException;
 import com.event.messageservice.mapper.MessageMapper;
 import com.event.messageservice.repository.MessageRespository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class MessageService {
     }
 
     /**
-     * 휴대폰 번호 로 메시지 이력 주회
+     * 휴대폰 번호 로 메시지 이력 조회
      * @param phoneNumber 휴대폰 번호
      * @return 메시지 이력 리스트
      */
@@ -44,7 +45,7 @@ public class MessageService {
         List<MessageHistory> result = repository.findByPhoneNumberAndVisibleTrueOrderBySentAtDesc(formattedNumber);
         if (result.isEmpty()) {
             log.error("메시지 이력 조회 실패 -휴대폰 번호: {}", phoneNumber);
-            throw new EntityNotFoundException("No message history found for phone number: " + phoneNumber);
+            throw new MessageException(MessageErrorCode.MESSAGE_HISTORY_NOT_FOUND_BY_PHONE);
         }
         log.info("메시지 이력 조회 - 휴대폰 번호: {}, 결과: {}", phoneNumber, result.get(0));
         return result;
@@ -60,7 +61,7 @@ public class MessageService {
         List<MessageHistory> result = repository.findByMemberIdAndVisibleTrueOrderBySentAtDesc(memberId);
         if (result.isEmpty()) {
             log.error("메시지 이력 조회 실패 - 회원 ID: {}", memberId);
-            throw new EntityNotFoundException("No message history found for member id: " + memberId);
+            throw new MessageException(MessageErrorCode.MESSAGE_HISTORY_NOT_FOUND_BY_MEMBER);
         }
         log.info("메시지 이력 조회 - 회원 ID: {}, 결과: {}", memberId, result.get(0));
         return result;
@@ -72,7 +73,7 @@ public class MessageService {
      * @param memberId 회원 ID
      */
     @Transactional
-    public int visableFalseMessageHistory(String memberId) {
+    public int visibleFalseMessageHistory(String memberId) {
         List<MessageHistory> result = repository.findByMemberIdAndVisibleTrueOrderBySentAtDesc(memberId);
         result.forEach(messageHistory -> {
             messageHistory.setVisible(false);
@@ -105,7 +106,7 @@ public class MessageService {
             return digits.replaceFirst("(\\d{3})(\\d{4})(\\d{4})", "$1-$2-$3");
         } else {
             log.error("Invalid phone number format: {}", rawNumber);
-            throw new IllegalArgumentException("올바르지 않은 휴대폰 번호입니다: " + rawNumber);
+            throw new MessageException(MessageErrorCode.INVALID_PHONE_NUMBER);
         }
     }
 

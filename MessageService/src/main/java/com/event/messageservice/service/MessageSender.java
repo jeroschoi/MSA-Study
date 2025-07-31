@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public interface MessageSender {
 
-    boolean suport(MessageType messageType);
+    boolean support(MessageType messageType);
 
     void sendMessage(MessageRequestDto messageRequestDto);
 }

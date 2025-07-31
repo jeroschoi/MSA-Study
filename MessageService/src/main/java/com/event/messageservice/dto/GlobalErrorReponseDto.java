@@ -6,5 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GlobalErrorReponseDto {
+    private String errorCode;
     private String message;
 }

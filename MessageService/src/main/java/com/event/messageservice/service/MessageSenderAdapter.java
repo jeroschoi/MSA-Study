@@ -1,6 +1,8 @@
 package com.event.messageservice.service;
 
 import com.event.messageservice.dto.MessageRequestDto;
+import com.event.messageservice.exception.MessageErrorCode;
+import com.event.messageservice.exception.MessageException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,10 +16,10 @@ public class MessageSenderAdapter {
 
     public MessageSender getMessageSender(MessageRequestDto dto) {
         for (MessageSender sender : messages) {
-            if(sender.suport(dto.getMessageType())){
+            if(sender.support(dto.getMessageType())){
                 return sender;
             }
         }
-        throw new IllegalArgumentException("지원하지 않는 메시지 타입입니다: " + dto.getMessageType());
+        throw new MessageException(MessageErrorCode.UNSUPPORTED_MESSAGE_TYPE);
     }
 }

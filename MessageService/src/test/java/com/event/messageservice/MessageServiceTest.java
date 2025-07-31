@@ -3,6 +3,8 @@ package com.event.messageservice;
 import com.event.messageservice.dto.MessageRequestDto;
 import com.event.messageservice.entity.MessageHistory;
 import com.event.messageservice.entity.MessageType;
+import com.event.messageservice.exception.MessageErrorCode;
+import com.event.messageservice.exception.MessageException;
 import com.event.messageservice.repository.MessageRespository;
 import com.event.messageservice.service.MessageService;
 import jakarta.persistence.EntityNotFoundException;
@@ -113,8 +115,8 @@ class MessageServiceTest {
         assertThatThrownBy(() -> {
             messageService.getMessagePhoneNumber(phoneNumber);
         })
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("No message history found for phone number: " + phoneNumber);
+                .isInstanceOf(MessageException.class)
+                .hasMessage(MessageErrorCode.MESSAGE_HISTORY_NOT_FOUND_BY_PHONE.getMessage());
     }
 
     @Test
@@ -153,13 +155,12 @@ class MessageServiceTest {
         // when
         when(repository.findByMemberIdAndVisibleTrueOrderBySentAtDesc(memberId))
                 .thenReturn(Collections.emptyList());
-
         // then
         assertThatThrownBy(() -> {
             messageService.getMessageMemberId(memberId);
         })
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("No message history found for member id: " + memberId);
+                .isInstanceOf(MessageException.class)
+                .hasMessage(MessageErrorCode.MESSAGE_HISTORY_NOT_FOUND_BY_MEMBER.getMessage());
     }
 
     @Test
@@ -184,7 +185,7 @@ class MessageServiceTest {
                 .thenReturn(historyList);
 
         // when
-        int updateSize = messageService.visableFalseMessageHistory(memberId);
+        int updateSize = messageService.visibleFalseMessageHistory(memberId);
 
         // then
         assertThat(messageHistory.isVisible()).isFalse();

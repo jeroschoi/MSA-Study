@@ -9,8 +9,6 @@ import java.util.List;
 
 @Repository
 public interface MessageRespository extends JpaRepository<MessageHistory, Long> {
-
-
     List<MessageHistory> findByMemberIdAndVisibleTrueOrderBySentAtDesc(String memberId);
 
     List<MessageHistory> findByPhoneNumberAndVisibleTrueOrderBySentAtDesc(String phoneNumber);

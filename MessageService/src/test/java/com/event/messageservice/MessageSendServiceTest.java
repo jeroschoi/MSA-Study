@@ -21,7 +21,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,10 +66,9 @@ class MessageSendServiceTest {
         doNothing().when(messageSender).sendMessage(dto);
 
         // when
-        boolean result = messageSendService.sendMessage(dto);
+        messageSendService.sendMessage(dto);
 
         // then
-        assertTrue(result);
         verify(messageSenderAdapter).getMessageSender(dto);
         verify(messageService).saveMessageHistory(dto);
         verify(messageSender).sendMessage(dto);
