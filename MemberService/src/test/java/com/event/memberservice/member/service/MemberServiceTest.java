@@ -17,7 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -48,7 +47,7 @@ class MemberServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private WebClient.Builder webClientBuilder;
+    private WebClient messageWebClient;
 
     // --- 테스트 데이터 ---
     private MemberJoinRequest joinRequest;
@@ -83,28 +82,19 @@ class MemberServiceTest {
                 .id(1L)
                 .userId("testuser")
                 .build();
-
-        // private final 필드인 messageServiceUrl 값 설정
-        ReflectionTestUtils.setField(memberService, "messageServiceUrl", "http://fake-message-service");
     }
 
-    /**
-     * WebClient는 여러 Mock 객체를 체인 형태로 모킹해야 하므로, 별도 메소드로 분리하여 재사용합니다.
-     */
     private void mockWebClient() {
-        // WebClient의 각 단계를 Mock 객체로 생성
-        WebClient webClient = mock(WebClient.class);
         WebClient.RequestBodyUriSpec requestBodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
         WebClient.RequestBodySpec requestBodySpec = mock(WebClient.RequestBodySpec.class);
         WebClient.RequestHeadersSpec requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
         WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
 
-        // 메소드 체인 순서에 맞게 Mock 객체들의 행동을 정의
-        when(webClientBuilder.build()).thenReturn(webClient);
-        when(webClient.post()).thenReturn(requestBodyUriSpec);
+        when(messageWebClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(anyString())).thenReturn(requestBodySpec);
-        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec); // 수정된 부분
+        when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+
         when(responseSpec.bodyToMono(Void.class)).thenReturn(Mono.empty());
     }
 
@@ -137,6 +127,7 @@ class MemberServiceTest {
             verify(memberRepository).existsByEmail(joinRequest.getEmail());
             verify(memberRepository).existsByContact(joinRequest.getContact());
             verify(memberRepository).save(any(MemberEntity.class));
+            verify(messageWebClient, times(1)).post();
         }
 
         @Test
@@ -238,6 +229,7 @@ class MemberServiceTest {
             assertThat(memberEntity.isActive()).isFalse();
             assertThat(memberEntity.getExitDate()).isNotNull();
             verify(memberRepository).findByUserId("testuser");
+            verify(messageWebClient, times(1)).post();
         }
 
         @Test

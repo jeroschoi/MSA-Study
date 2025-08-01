@@ -1,6 +1,5 @@
 package com.event.memberservice.member.service;
 
-import com.event.memberservice.common.exception.CommonErrorCode;
 import com.event.memberservice.member.dto.MemberJoinRequest;
 import com.event.memberservice.member.dto.MemberResponse;
 import com.event.memberservice.member.dto.MessageRequest;
@@ -32,13 +31,13 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final MemberMapper memberMapper;
-    private final WebClient.Builder webClientBuilder;
+    // WebClient.Builder 대신, 미리 생성된 WebClient Bean을 직접 주입받습니다.
+    private final WebClient messageWebClient;
 
     private static final int MESSAGE_API_TIMEOUT_SECONDS = 3;
     private static final int MESSAGE_API_MAX_RETRY_COUNT = 2;
 
-    @Value("${app.api.message-service-url}")
-    private String messageServiceUrl;
+    // @Value 설정은 WebClientConfig로 이동했으므로 여기서 제거합니다.
 
     /**
      * 회원가입 로직
@@ -52,11 +51,12 @@ public class MemberService {
 
         try {
             MemberEntity savedMember = memberRepository.save(memberEntity);
+            // 메시지 API 호출 실패는 회원가입 로직의 성공/실패에 영향을 주지 않습니다.
+            // 비동기로 호출하고, 에러 발생 시 로그만 기록합니다.
             callMessageApi("/send-join", savedMember)
                     .subscribe(null, error -> log.error("회원가입 메시지 전송 실패 (비동기): {}", error.getMessage()));
             return memberMapper.toResponse(savedMember);
         } catch (DataIntegrityViolationException e) {
-            // DB 제약조건 위배 (예: 유니크 키 중복) 시, 더 명확한 예외로 변환하여 던집니다.
             log.error("회원가입 DB 제약조건 위배: userId={}", request.getUserId(), e);
             throw new MemberException(MemberErrorCode.DUPLICATE_USER_ID, "데이터 저장 중 중복이 발생했습니다.");
         }
@@ -91,7 +91,6 @@ public class MemberService {
 
         memberEntity.setActive(false);
         memberEntity.setExitDate(LocalDateTime.now());
-        // memberRepository.save(memberEntity); // 더티 체킹으로 자동 업데이트되므로 명시적 save 호출 불필요
 
         callMessageApi("/send-exit", memberEntity)
                 .subscribe(null, error -> log.error("회원탈퇴 메시지 전송 실패 (비동기): {}", error.getMessage()));
@@ -99,17 +98,18 @@ public class MemberService {
 
     /**
      * 메시지 서비스 API 호출 (비동기)
+     * 주입받은 messageWebClient를 사용하여 API를 호출합니다.
      */
     private Mono<Void> callMessageApi(String endpoint, MemberEntity memberEntity) {
         MessageRequest requestDto = memberMapper.toMessageRequest(memberEntity);
-        return webClientBuilder.build()
+        return messageWebClient // 미리 생성된 WebClient 인스턴스를 사용합니다.
                 .post()
-                .uri(messageServiceUrl + endpoint)
+                .uri(endpoint) // baseUrl이 이미 설정되어 있으므로, 상세 경로만 지정합니다.
                 .bodyValue(requestDto)
                 .retrieve()
                 .bodyToMono(Void.class)
-                .timeout(Duration.ofSeconds(MESSAGE_API_TIMEOUT_SECONDS))
-                .retry(MESSAGE_API_MAX_RETRY_COUNT)
+                .timeout(Duration.ofSeconds(MESSAGE_API_TIMEOUT_SECONDS)) // 3초 타임아웃
+                .retry(MESSAGE_API_MAX_RETRY_COUNT) // 실패 시 2번 재시도
                 .doOnError(error -> log.error("메시지 API 호출 실패: userId={}, error={}", memberEntity.getUserId(), error.getMessage()));
     }
 
