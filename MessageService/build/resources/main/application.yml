@@ -30,6 +30,15 @@ springdoc:
     path: /message/swagger.html
 
 
+kafka:
+  consumer:
+    bootstrap:
+      servers: localhost:9092
+
+  producer:
+    bootstrap:
+      servers: localhost:9092
+
 logging:
   level:
     org.springframework.transaction.interceptor: TRACE

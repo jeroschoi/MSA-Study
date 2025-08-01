@@ -2,6 +2,7 @@ package com.event.messageservice.controller;
 
 import com.event.messageservice.dto.GlobalReponseDto;
 import com.event.messageservice.dto.MessageRequestDto;
+import com.event.messageservice.dto.MultiMessageResponseDto;
 import com.event.messageservice.entity.MessageHistory;
 import com.event.messageservice.service.MessageSendService;
 import com.event.messageservice.service.MessageService;
@@ -10,18 +11,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -43,8 +37,8 @@ public class MessageController {
 
     @PostMapping("/send/multi")
     @Operation(summary = "Send Multiple Messages", description = "다건 메시지 전송")
-    public ResponseEntity<GlobalReponseDto> sendMultipleMessages(@RequestBody @Valid List<MessageRequestDto> requestDtoList) {
-        GlobalReponseDto responseDto = new GlobalReponseDto();
+    public ResponseEntity<MultiMessageResponseDto> sendMultipleMessages(@RequestBody @Valid List<MessageRequestDto> requestDtoList) {
+
         int sentCount = 0;
         List<MessageRequestDto> failedList = new ArrayList<>();
 
@@ -58,15 +52,14 @@ public class MessageController {
             }
         }
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("totalCount", requestDtoList.size());
-        result.put("sentCount", sentCount);
-        result.put("failedCount", failedList.size());
+        MultiMessageResponseDto response = MultiMessageResponseDto.builder()
+                .totalCount(requestDtoList.size())
+                .sentCount(sentCount)
+                .failedList(failedList)
+                .build();
 
-        responseDto.setData(result);
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(response);
     }
-
 
     @PostMapping
     @Operation(summary = "Create Message History", description = "메시지 이력 생성")

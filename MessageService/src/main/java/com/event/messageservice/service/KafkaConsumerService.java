@@ -1,4 +1,4 @@
-package com.event.messageservice.example.service;
+package com.event.messageservice.service;
 
 
 import lombok.RequiredArgsConstructor;

@@ -1,11 +1,8 @@
 package com.event.messageservice.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
 
-@Getter
-@Setter
-public class GlobalErrorReponseDto {
-    private String errorCode;
-    private String message;
+
+@Builder
+public record GlobalErrorReponseDto(String errorCode, String message) {
 }
