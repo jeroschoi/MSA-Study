@@ -1,0 +1,2 @@
+�20:35:55.314 [Test worker] INFO com.event.messageservice.service.MessageService -- 포맷팅 전 휴대폰 번호: 010-1234-5678, 추출된 숫자: 01012345678
+�20:35:55.318 [Test worker] ERROR com.event.messageservice.service.MessageService -- 메시지 이력 조회 실패 -휴대폰 번호: 010-1234-5678
