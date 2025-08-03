@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.event.messageservice.MessageServiceTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-07-31T11:35:54" hostname="gim-yejin-ui-MacBookPro.local" time="0.526">
+  <properties/>
+  <testcase name="휴대폰 번호로 메시지 이력 조회 실패 테스트" classname="com.event.messageservice.MessageServiceTest" time="0.526"/>
+  <system-out><![CDATA[20:35:55.314 [Test worker] INFO com.event.messageservice.service.MessageService -- 포맷팅 전 휴대폰 번호: 010-1234-5678, 추출된 숫자: 01012345678
+20:35:55.318 [Test worker] ERROR com.event.messageservice.service.MessageService -- 메시지 이력 조회 실패 -휴대폰 번호: 010-1234-5678
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
