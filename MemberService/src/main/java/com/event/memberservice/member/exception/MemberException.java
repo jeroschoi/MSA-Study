@@ -1,15 +1,16 @@
 package com.event.memberservice.member.exception;
 
-import com.event.memberservice.common.exception.BusinessException;
-import com.event.memberservice.common.exception.ErrorCode;
+import lombok.Getter;
 
-public class MemberException extends BusinessException {
+@Getter
+public class MemberException extends RuntimeException {
 
-    public MemberException(ErrorCode errorCode) {
-        super(errorCode);
-    }
+    private final String errorCode;
+    private final String message;
 
-    public MemberException(ErrorCode errorCode, String detailMessage) {
-        super(errorCode, detailMessage);
+    public MemberException(MemberErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode.getCode();
+        this.message = errorCode.getMessage();
     }
 }

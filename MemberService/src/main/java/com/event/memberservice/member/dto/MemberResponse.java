@@ -1,7 +1,10 @@
 package com.event.memberservice.member.dto;
 
 import com.event.memberservice.member.repository.entity.MessageType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 

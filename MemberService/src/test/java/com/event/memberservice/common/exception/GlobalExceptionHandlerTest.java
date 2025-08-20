@@ -30,7 +30,7 @@ class GlobalExceptionHandlerTest {
     @DisplayName("BusinessException 처리")
     void handleBusinessException() {
         // Given
-        MemberException exception = new MemberException(MemberErrorCode.MEMBER_NOT_FOUND, "Custom detail message");
+        MemberException exception = new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
 
         // When
         ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleBusinessException(exception);

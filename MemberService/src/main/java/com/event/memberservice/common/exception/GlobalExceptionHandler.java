@@ -1,6 +1,7 @@
 package com.event.memberservice.common.exception;
 
 import com.event.memberservice.common.response.ErrorResponse;
+import com.event.memberservice.member.exception.MemberException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,14 +17,13 @@ public class GlobalExceptionHandler {
     /**
      * 모든 비즈니스 예외를 처리합니다. (MemberException 등 BusinessException의 모든 자식 클래스)
      */
-    @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException e) {
-        ErrorCode errorCode = e.getErrorCode();
-        log.warn("BusinessException occurred: code={}, message='{}'", errorCode.getCode(), e.getMessage(), e);
+    @ExceptionHandler(MemberException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessException(MemberException e) {
+        log.warn("BusinessException occurred: code={}, message='{}'", e.getErrorCode(), e.getMessage(), e);
 
         // ErrorCode의 메시지와 Exception의 메시지가 다를 경우, Exception의 메시지를 detail로 사용
-        String detail = errorCode.getMessage().equals(e.getMessage()) ? null : e.getMessage();
-        ErrorResponse response = ErrorResponse.of(errorCode, detail);
+        String detail = e.getMessage().equals(e.getMessage()) ? null : e.getMessage();
+        ErrorResponse response = ErrorResponse.of(e.getErrorCode(), detail);
 
         return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
     }

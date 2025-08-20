@@ -2,7 +2,6 @@ package com.event.memberservice.member.service;
 
 import com.event.memberservice.member.dto.MemberJoinRequest;
 import com.event.memberservice.member.dto.MemberResponse;
-import com.event.memberservice.member.dto.MessageRequest;
 import com.event.memberservice.member.exception.MemberErrorCode;
 import com.event.memberservice.member.exception.MemberException;
 import com.event.memberservice.member.mapper.MemberMapper;
@@ -10,15 +9,10 @@ import com.event.memberservice.member.repository.MemberRepository;
 import com.event.memberservice.member.repository.entity.MemberEntity;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,88 +23,87 @@ import java.util.Optional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
     private final MemberMapper memberMapper;
-    // WebClient.Builder 대신, 미리 생성된 WebClient Bean을 직접 주입받습니다.
-    private final WebClient messageWebClient;
 
-    private static final int MESSAGE_API_TIMEOUT_SECONDS = 3;
-    private static final int MESSAGE_API_MAX_RETRY_COUNT = 2;
-
-    // @Value 설정은 WebClientConfig로 이동했으므로 여기서 제거합니다.
-
-    /**
-     * 회원가입 로직
-     */
     @Transactional
     public MemberResponse join(MemberJoinRequest request) {
-        validateDuplicateMember(request);
-
-        MemberEntity memberEntity = memberMapper.toEntity(request);
-        memberEntity.setPassword(passwordEncoder.encode(request.getPassword()));
-
         try {
-            MemberEntity savedMember = memberRepository.save(memberEntity);
-            // 메시지 API 호출 실패는 회원가입 로직의 성공/실패에 영향을 주지 않습니다.
-            // 비동기로 호출하고, 에러 발생 시 로그만 기록합니다.
-            callMessageApi("/send-join", savedMember)
-                    .subscribe(null, error -> log.error("회원가입 메시지 전송 실패 (비동기): {}", error.getMessage()));
-            return memberMapper.toResponse(savedMember);
+            validateDuplicateMember(request);
+            MemberEntity memberEntity = createMemberEntity(request);
+            MemberEntity savedMemberEntity = saveMember(memberEntity);
+            sendJoinMessage(savedMemberEntity);
+            return memberMapper.toResponse(savedMemberEntity);
+            
         } catch (DataIntegrityViolationException e) {
-            log.error("회원가입 DB 제약조건 위배: userId={}", request.getUserId(), e);
-            throw new MemberException(MemberErrorCode.DUPLICATE_USER_ID, "데이터 저장 중 중복이 발생했습니다.");
+            log.error("회원가입 DB 오류: {} - {}", request.getUserId(), e.getMessage());
+            throw new MemberException(MemberErrorCode.DATABASE_ERROR);
+        } catch (MemberException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("회원가입 중 예상치 못한 오류: {} - {}", request.getUserId(), e.getMessage());
+            throw new MemberException(MemberErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
-    /**
-     * 회원가입 시 중복 검사
-     */
+    private MemberEntity createMemberEntity(MemberJoinRequest request) {
+        MemberEntity memberEntity = memberMapper.toEntity(request);
+        memberEntity.setPassword(request.getPassword());
+        return memberEntity;
+    }
+
+    private MemberEntity saveMember(MemberEntity memberEntity) {
+        return memberRepository.save(memberEntity);
+    }
+
+    private void sendJoinMessage(MemberEntity memberEntity) {
+        try {
+            // 메시지 전송 로직
+            // webclient 전송 or messageSendService.sendMessage
+        } catch (Exception e) {
+            log.error("회원가입 메시지 전송 실패: {} - {}", memberEntity.getUserId(), e.getMessage());
+        }
+    }
+
     private void validateDuplicateMember(MemberJoinRequest request) {
-        if (memberRepository.existsByUserId(request.getUserId())) {
+        // userId
+        if (memberRepository.findByUserId(request.getUserId()).isPresent()) {
             throw new MemberException(MemberErrorCode.DUPLICATE_USER_ID);
         }
-        if (memberRepository.existsByEmail(request.getEmail())) {
+        
+        // email
+        if (memberRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new MemberException(MemberErrorCode.DUPLICATE_EMAIL);
         }
-        if (memberRepository.existsByContact(request.getContact())) {
+        
+        // contact
+        if (memberRepository.findByContact(request.getContact()).isPresent()) {
             throw new MemberException(MemberErrorCode.DUPLICATE_CONTACT);
         }
     }
 
-    /**
-     * 회원탈퇴 로직
-     */
     @Transactional
     public void exit(String userId) {
+        try {
+            MemberEntity memberEntity = findAndValidateMember(userId);
+            memberEntity.setActive(false);
+            memberEntity.setExitDate(LocalDateTime.now());
+            // TODO - 탈퇴 메시지 전송로직 (Kafka event 발행 처리)
+
+        } catch (Exception e) {
+            log.error("회원탈퇴 중 예상치 못한 오류: {} - {}", userId, e.getMessage());
+            throw new MemberException(MemberErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private MemberEntity findAndValidateMember(String userId) {
         MemberEntity memberEntity = memberRepository.findByUserId(userId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (!memberEntity.isActive()) {
             throw new MemberException(MemberErrorCode.ALREADY_EXITED);
         }
-
-        memberEntity.setActive(false);
-        memberEntity.setExitDate(LocalDateTime.now());
-
-        callMessageApi("/send-exit", memberEntity)
-                .subscribe(null, error -> log.error("회원탈퇴 메시지 전송 실패 (비동기): {}", error.getMessage()));
-    }
-
-    /**
-     * 메시지 서비스 API 호출 (비동기)
-     * 주입받은 messageWebClient를 사용하여 API를 호출합니다.
-     */
-    private Mono<Void> callMessageApi(String endpoint, MemberEntity memberEntity) {
-        MessageRequest requestDto = memberMapper.toMessageRequest(memberEntity);
-        return messageWebClient // 미리 생성된 WebClient 인스턴스를 사용합니다.
-                .post()
-                .uri(endpoint) // baseUrl이 이미 설정되어 있으므로, 상세 경로만 지정합니다.
-                .bodyValue(requestDto)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .timeout(Duration.ofSeconds(MESSAGE_API_TIMEOUT_SECONDS)) // 3초 타임아웃
-                .retry(MESSAGE_API_MAX_RETRY_COUNT) // 실패 시 2번 재시도
-                .doOnError(error -> log.error("메시지 API 호출 실패: userId={}, error={}", memberEntity.getUserId(), error.getMessage()));
+        
+        return memberEntity;
     }
 
     @Transactional(readOnly = true)
@@ -135,7 +128,6 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public List<MemberResponse> getAllActiveMembers() {
-        List<MemberEntity> activeMembers = memberRepository.findByActiveTrue();
-        return memberMapper.toActiveResponseList(activeMembers);
+        return memberMapper.toActiveResponseList(memberRepository.findByActiveTrue());
     }
 }

@@ -2,7 +2,10 @@ package com.event.memberservice.member.dto;
 
 import com.event.memberservice.member.repository.entity.MessageType;
 import jakarta.validation.constraints.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor

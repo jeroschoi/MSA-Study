@@ -15,11 +15,11 @@ class ExceptionSimulationTest {
     void createMemberException_OnlyErrorCode() {
         // When & Then
         assertThatThrownBy(() -> {
-            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND );
         })
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberErrorCode.MEMBER_NOT_FOUND.getMessage())
-                .matches(ex -> ((MemberException) ex).getErrorCode() == MemberErrorCode.MEMBER_NOT_FOUND);
+                .matches(ex -> ((MemberException) ex).getErrorCode().equals(MemberErrorCode.MEMBER_NOT_FOUND.getCode()));
     }
 
     @Test
@@ -30,11 +30,10 @@ class ExceptionSimulationTest {
 
         // When & Then
         assertThatThrownBy(() -> {
-            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND, customMessage);
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
         })
                 .isInstanceOf(MemberException.class)
-                .hasMessage(customMessage)
-                .matches(ex -> ((MemberException) ex).getErrorCode() == MemberErrorCode.MEMBER_NOT_FOUND);
+                .matches(ex -> ((MemberException) ex).getErrorCode().equals(MemberErrorCode.MEMBER_NOT_FOUND.getCode()));
     }
 
     @Test

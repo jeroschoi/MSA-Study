@@ -2,7 +2,6 @@ package com.event.memberservice.member.mapper;
 
 import com.event.memberservice.member.dto.MemberJoinRequest;
 import com.event.memberservice.member.dto.MemberResponse;
-import com.event.memberservice.member.dto.MessageRequest;
 import com.event.memberservice.member.repository.entity.MemberEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -34,7 +33,4 @@ public interface MemberMapper {
     @Mapping(target = "address", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     List<MemberResponse> toActiveResponseList(List<MemberEntity> entities);
-
-    // Entity → MessageRequest DTO
-    MessageRequest toMessageRequest(MemberEntity entity);
 }
