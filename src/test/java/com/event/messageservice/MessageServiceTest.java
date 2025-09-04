@@ -1,13 +1,12 @@
 package com.event.messageservice;
 
 import com.event.messageservice.dto.MessageRequestDto;
+import com.event.messageservice.dto.MessageType;
 import com.event.messageservice.entity.MessageHistory;
-import com.event.messageservice.entity.MessageType;
 import com.event.messageservice.exception.MessageErrorCode;
 import com.event.messageservice.exception.MessageException;
 import com.event.messageservice.repository.MessageRespository;
 import com.event.messageservice.service.MessageService;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

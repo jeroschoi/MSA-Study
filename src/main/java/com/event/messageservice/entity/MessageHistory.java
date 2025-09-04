@@ -15,6 +15,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
+import com.event.messageservice.dto.MessageType;
 
 @Entity
 @Getter

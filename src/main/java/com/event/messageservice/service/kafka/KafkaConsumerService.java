@@ -1,4 +1,4 @@
-package com.event.messageservice.service;
+package com.event.messageservice.service.kafka;
 
 
 import lombok.RequiredArgsConstructor;
