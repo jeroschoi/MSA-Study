@@ -24,6 +24,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
+    /** 고민해볼 부분
+     * Auth Service에서 filter 처리를 하는게 맞는가에 대한 고민
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -47,6 +50,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // 토큰이 유효한지 확인합니다. (만료 시간 등)
             if (!jwtUtil.isTokenExpired(jwt)) {
+
                 // Spring Security가 이해할 수 있는 인증 객체를 생성합니다.
                 UserDetails userDetails = new User(userId, "", new ArrayList<>());
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

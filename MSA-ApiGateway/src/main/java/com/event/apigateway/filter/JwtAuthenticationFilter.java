@@ -34,7 +34,8 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
     /**
      * JWT 토큰을 검증하고 사용자 정보를 헤더에 추가합니다.
-     * 
+     * 토큰을 검증하는 것 까지만 해도 충분하지 않는가?
+     * 사용자 ID를 Gateway에서 추가하는게 맞나?
      * @param exchange ServerWebExchange 객체
      * @return 수정된 ServerWebExchange 객체
      * @throws GatewayException 토큰 검증 실패 시
